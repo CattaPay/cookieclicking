@@ -292,7 +292,7 @@ public class Algorithms {
     public static Node stonkFish() {
         int[] depthIncrements = {20000, 60000};
         int[] keepIncrements = {10000, 20000};
-        int maxVal = 1000000;
+        int maxVal = 10000000;
         Counter counter = new Counter();
         
         Node solution = new Node(15);
@@ -349,7 +349,7 @@ public class Algorithms {
         int depthChange;
         double smallCookies;
         
-        double targetTime = 100;
+        // double targetTime = 100;
 
         while (true){
             startNode = solution.copy();
@@ -358,6 +358,8 @@ public class Algorithms {
             smallCookies = (double) (currentCookies) / 30000;
 
             depthChange = (int)(200000 * Math.pow(smallCookies, 0.28));
+
+            // depthChange = (int)(110000 * Math.pow(smallCookies, 0.36));
             nextDepth = currentCookies + depthChange;
 
 
