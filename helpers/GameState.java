@@ -1,8 +1,6 @@
 package helpers;
 
 import java.util.*;
-import java.io.*;
-import java.lang.Math.*;
 
 
 public class GameState {
@@ -13,6 +11,7 @@ public class GameState {
     static int FINGER_COST = 100000;
     static int[] BASE_COST = {15, 100, 1100, 12000, 130000};
     static int[] GRANDMA_UPGRADE_COSTS = {55000, 600000};
+    static double SELL_EFFICIENCY = 0.25;
 
     // public static int MAX_COOKIES = 1000;
     static int[][] UPGRADE_COSTS = {{100, 500, 10000},
@@ -30,6 +29,7 @@ public class GameState {
 
     int non_clickers;
     int cookies; // total cookies
+    int cookiesBanked; // used for 
     int targetCookies; // target for number of cookies
     boolean done; // flag for if game is finished
     // double time; // time in 10ths of seconds
@@ -62,6 +62,7 @@ public class GameState {
         out.cps_10 = this.cps_10;
         out.cookies = this.cookies;
         out.grandmaUpgrades = this.grandmaUpgrades;
+        out.thousand_fingers = this.thousand_fingers;
         // out.time = this.time;
 
         return out;
@@ -105,83 +106,27 @@ public class GameState {
         targetCookies = newTarget;
     }
 
-    public ArrayList<Action> getActions() {
-        ArrayList<Action> actions = new ArrayList<Action>();
-        int maxCost = targetCookies - cookies;
-
-        // add wait as action
-        actions.add(new Action(3, maxCost, -1));
-
-        // add each building as action
-        for (int i = 0; i < 5; i++){
-            // convert this to lookup table
-            int build_cost = (int) Math.ceil(BASE_COST[i] * Math.pow(1.15, buildings[i]));
-            if (build_cost <= maxCost) {
-                actions.add(new Action(0, build_cost, i));
-            }
-        }
-
-        // add clicker upgrade if possible
-        if (double_upgrades[0] < 3) {
-            if (CURSOR_REQS[double_upgrades[0]] <= buildings[0]){
-                if (UPGRADE_COSTS[0][double_upgrades[0]] <= maxCost){
-                    actions.add(new Action(1, UPGRADE_COSTS[0][double_upgrades[0]], 0));
-                }
-            }
-        }
-
-        // add other upgrades if possible
-        for (int i = 1; i < 4; i++){
-            if (double_upgrades[i] < 3) {
-                if (UPGRADE_REQS[double_upgrades[i]] <= buildings[i]){
-                    if (UPGRADE_COSTS[i][double_upgrades[i]] <= maxCost){
-                        actions.add(new Action(1, UPGRADE_COSTS[i][double_upgrades[i]], i));
-                    }  
-                }
-            }
-        }
-
-        // add grandma upgrades if possible
-        if (grandmaUpgrades < 2 && buildings[1] > 0) {
-            // if enough buildings to unlock upgrade
-            if (buildings[grandmaUpgrades + 2] >= 15){
-                if (GRANDMA_UPGRADE_COSTS[grandmaUpgrades] <= maxCost){
-                    actions.add(new Action(4, GRANDMA_UPGRADE_COSTS[grandmaUpgrades], -1));
-                }
-            }
-        }
-
-
-        // add thousand fingers if possible
-        if (!thousand_fingers) {
-            if (FINGER_REQ <= buildings[0]){
-                if (FINGER_COST <= maxCost) {
-                    actions.add(new Action(2, FINGER_COST, -1));
-                }
-            }
-        }
-        return actions;
-    }
-
     public ArrayList<Action> getActionsv2() {
         ArrayList<Action> actions = new ArrayList<Action>();
         int maxCost = targetCookies - cookies;
+        int cost;
 
         // add each building as action
         for (int i = 0; i < 5; i++){
             // convert this to lookup table
-            int build_cost = (int) Math.ceil(BASE_COST[i] * Math.pow(1.15, buildings[i]));
+            cost = (int) Math.ceil(BASE_COST[i] * Math.pow(1.15, buildings[i])) - cookiesBanked;
             Counter2.count++;
-            if (build_cost <= maxCost) {
-                actions.add(new Action(0, build_cost, i));
+            if (cost <= maxCost && cost >= 0) {
+                actions.add(new Action(0, cost, i));
             }
         }
 
         // add clicker upgrade if possible
         if (double_upgrades[0] < 3) {
             if (CURSOR_REQS[double_upgrades[0]] <= buildings[0]){
-                if (UPGRADE_COSTS[0][double_upgrades[0]] <= maxCost){
-                    actions.add(new Action(1, UPGRADE_COSTS[0][double_upgrades[0]], 0));
+                cost = UPGRADE_COSTS[0][double_upgrades[0]] - cookiesBanked;
+                if (cost <= maxCost && cost >= 0){
+                    actions.add(new Action(1, cost, 0));
                 }
             }
         }
@@ -190,8 +135,9 @@ public class GameState {
         for (int i = 1; i < 4; i++){
             if (double_upgrades[i] < 3) {
                 if (UPGRADE_REQS[double_upgrades[i]] <= buildings[i]){
-                    if (UPGRADE_COSTS[i][double_upgrades[i]] <= maxCost){
-                        actions.add(new Action(1, UPGRADE_COSTS[i][double_upgrades[i]], i));
+                    cost = UPGRADE_COSTS[i][double_upgrades[i]] - cookiesBanked;
+                    if (cost <= maxCost && cost >= 0){
+                        actions.add(new Action(1, cost, i));
                     }  
                 }
             }
@@ -202,11 +148,12 @@ public class GameState {
             
             // if enough buildings to unlock upgrade
             if (buildings[grandmaUpgrades + 2] >= 15){
-                if (GRANDMA_UPGRADE_COSTS[grandmaUpgrades] <= maxCost){
+                cost = GRANDMA_UPGRADE_COSTS[grandmaUpgrades] - cookiesBanked;
+                if (cost <= maxCost && cost >= 0){
                     if (grandmaUpgrades == 1) {
                         grandmaUpgrades = 1;
                     }
-                    actions.add(new Action(4, GRANDMA_UPGRADE_COSTS[grandmaUpgrades], -1));
+                    actions.add(new Action(4, cost, -1));
                 }
             }
         }
@@ -214,7 +161,8 @@ public class GameState {
         // add thousand fingers if possible
         if (!thousand_fingers) {
             if (FINGER_REQ <= buildings[0]){
-                if (FINGER_COST <= maxCost) {
+                cost = FINGER_REQ - cookiesBanked;
+                if (FINGER_COST <= maxCost && FINGER_COST >= 0) {
                     actions.add(new Action(2, FINGER_COST, -1));
                 }
             }
@@ -224,15 +172,28 @@ public class GameState {
         if (actions.isEmpty()) {
             actions.add(new Action(3, maxCost, -1));
         }
+        else {
+            // add sell actions
+            for (int i = 0; i < 5; i++){
+                if (buildings[i] > 0){
+                    actions.add(new Action(5, 0, i, (int) Math.floor(Math.ceil(15 * Math.pow(1.15, buildings[i])) * SELL_EFFICIENCY)));
+                }
+            }
+
+        }     
         return actions;
     }
 
     public void doAction(Action action){
-
         // add cost
         cookies += action.cost;
         done = cookies == targetCookies;
 
+        if (action.flag == 5) { // sell
+            cookiesBanked += action.sellCount;
+            buildings[action.building]--;
+            return;
+        }
         switch (action.flag) {
             case 1:
                 double_upgrades[action.building]++;
@@ -245,19 +206,20 @@ public class GameState {
                 break;
             case 4:
                 grandmaUpgrades++;
-
+                break;
             default:
                 break;
-        }
-        if (grandmaUpgrades == 2){
-            grandmaUpgrades = 2;
+            
         }
         updateCPS();
+        cookiesBanked = 0;  
     }
 
     public void print() {
         System.out.println("Cookies: " + cookies);
+        System.out.println("Banked: " + cookiesBanked);
         // System.out.println("Time: " + time * 10);
+        System.out.print("Buildings: ");
         for (int i = 0; i < 5; i++){
             System.out.print(buildings[i]);
             System.out.print(" ");
@@ -308,6 +270,10 @@ public class GameState {
             return false;
         }
 
+        if (cookiesBanked != gamestate.cookiesBanked){
+            return false;
+        }
+
         return true;
 
     }
@@ -321,6 +287,10 @@ public class GameState {
         }
         temp *= 13;
         temp += grandmaUpgrades;
+        temp *= 17;
+        temp += cookiesBanked;
+        temp *= 13;
+    
         if (thousand_fingers) {
             temp += 4;
         }

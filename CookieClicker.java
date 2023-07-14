@@ -1,8 +1,5 @@
 
 import helpers.*;
-import java.util.*;
-import java.io.*;
-
 
 public class CookieClicker {
 
@@ -30,11 +27,19 @@ public class CookieClicker {
         // keep increments must be beeg
         // depth increments must be as big as possible
 
-        solution = Algorithms.stonkFish();
-        solution.printAllMoves();
+        // solution = Algorithms.stonkFish();
+        // solution.printAllMoves();
 
         // solution.printPathNodes();
 
+        // solution = Tester.treeSearchTester(250, true);
+        // solution.print();
+        // solution.printAllMoves();
+
+        solution = Tester.hashSearchTester(500, true);
+        solution.print();
+        solution.printAllMoves();
+        solution.printMoves();
 
     }
 

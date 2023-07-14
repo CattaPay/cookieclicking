@@ -1,15 +1,13 @@
 
 import helpers.*;
 import java.util.*;
-import java.io.*;
 
 public class Playable {
     public static void main(String[] args) {
-        Node game = new Node(1000000);
+        Node game = new Node(500);
         ArrayList<Action> actions;
         Scanner sc = new Scanner(System.in); 
         int in;
-        int counter = 1;
 
         while (true){
             actions = game.getGameState().getActionsv2();
@@ -31,7 +29,6 @@ public class Playable {
             }
             else {
                 game.doAction(actions.get(in - 1));
-                counter++;
             }
         }
 

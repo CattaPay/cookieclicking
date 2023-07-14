@@ -28,18 +28,6 @@ public class Node {
         path.add(action);
     }
 
-    public ArrayList<Node> getNeighbours(){
-        ArrayList<Node> bois = new ArrayList<Node>();
-        ArrayList<Action> actions = gametimer.getActions();
-        Node newNode;
-        
-        for (Action action : actions) {
-            newNode = actAndCopy(action);
-            bois.add(newNode);
-        }
-        return bois;
-    }
-
     public ArrayList<Node> getNeighboursv2(){
         ArrayList<Node> bois = new ArrayList<Node>();
         ArrayList<Action> actions = gametimer.getActionsv2();
@@ -196,48 +184,8 @@ public class Node {
     }
 
     public void printAllMoves() {
-        String out;
         for (Action action : path) {
-            out = "";
-            switch (action.flag) {
-                case 3:
-                    out = "wait";
-                    break;
-                case 4:
-                    out = "Super_up";
-                    break;
-                case 2:
-                    out = "thousand_fingers";
-                    break;
-                default:
-                    switch (action.building) {
-                    case 0:
-                        out = "Cursor";
-                        break;
-                    case 1:
-                        out = "Grandma";
-                        break;
-                    case 2:
-                        out = "Farm";
-                        break;
-                    case 3:
-                        out = "Mine";
-                        break;
-                    case 4:
-                        out = "Factory";
-                        break; 
-                    default:
-                        break;
-                }
-                    break;
-            }
-            if (action.flag == 1) {
-                out += "_up";
-            }
-
-
-            System.out.println(out);
-            
+            action.printReadable();
         }
     }
 }

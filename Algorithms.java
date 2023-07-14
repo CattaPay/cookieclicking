@@ -17,7 +17,7 @@ public class Algorithms {
 
         counter.nonBase++;
         
-        ArrayList<Node> nodes = startNode.getNeighbours();
+        ArrayList<Node> nodes = startNode.getNeighboursv2();
         ArrayList<Node> newNodes = new ArrayList<Node>();
 
         for (Node node : nodes) {
@@ -49,7 +49,7 @@ public class Algorithms {
         }
         map.put(gs, time);
 
-        ArrayList<Node> nodes = startNode.getNeighbours();
+        ArrayList<Node> nodes = startNode.getNeighboursv2();
         ArrayList<Node> newNodes = new ArrayList<Node>();
 
         for (Node node : nodes) {
@@ -91,7 +91,7 @@ public class Algorithms {
         }
         map.put(gs, time);
 
-        ArrayList<Node> nodes = startNode.getNeighbours();
+        ArrayList<Node> nodes = startNode.getNeighboursv2();
         ArrayList<Node> newNodes = new ArrayList<Node>();
 
         for (Node node : nodes) {
@@ -192,7 +192,7 @@ public class Algorithms {
             closedSet.put(gs, time);
 
             // for each neighbour:
-            nodes = newNode.getNeighbours();
+            nodes = newNode.getNeighboursv2();
 
             for (Node node : nodes) {
                 // check if in closed set

@@ -1,6 +1,6 @@
 # action code converter
 
-f = open("betteractions.txt", "r")
+f = open("bestactions.txt", "r")
 
 strout = ""
 

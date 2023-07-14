@@ -33,9 +33,6 @@ public class GameTimer {
         gamestate.doAction(action);
     }
 
-    public ArrayList<Action> getActions() {
-        return gamestate.getActions();
-    }
 
     public ArrayList<Action> getActionsv2() {
         return gamestate.getActionsv2();
