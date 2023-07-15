@@ -242,7 +242,6 @@ public class Algorithms {
             time = newNode.getTime();
             gs = newNode.getGameState();
             
-
             // check if node is in closed set
             if (closedSet.containsKey(gs)){
                 if (time >= closedSet.get(gs)){
@@ -280,7 +279,7 @@ public class Algorithms {
                 }
                 // if not or better, calc score and add to open queue
                 // currently using heuristic0
-                node.setScore(node.heuristic0() + nextTime);
+                node.setScore(node.heuristic4() + nextTime);
                 openNodes.add(node);
             }
 

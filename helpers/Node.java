@@ -152,6 +152,15 @@ public class Node {
         //return 0;
     }
 
+    public double heuristic4() {
+        double out = 0;
+        for (int i = 0; i < 5; i++){
+            out += getGameState().recentlySold[i];
+        }
+        return 0;
+        // return out / 4;
+    }
+
 
     public void printMoves() {
         for (Action action : path) {

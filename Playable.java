@@ -4,7 +4,7 @@ import java.util.*;
 
 public class Playable {
     public static void main(String[] args) {
-        Node game = new Node(500);
+        Node game = new Node(400);
         ArrayList<Action> actions;
         Scanner sc = new Scanner(System.in); 
         int in;

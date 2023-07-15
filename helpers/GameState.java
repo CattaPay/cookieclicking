@@ -26,6 +26,7 @@ public class GameState {
     public int[] double_upgrades; // counts the doubling upgrades for each building
     boolean thousand_fingers;
     int grandmaUpgrades; // require 15 of building, 1 grandma to upgrade
+    int[] recentlySold;
 
     int non_clickers;
     int cookies; // total cookies
@@ -48,6 +49,7 @@ public class GameState {
         cookies = 15;
         buildings[0] = 1;
         this.targetCookies = targetCookies;
+        this.recentlySold = new int[5];
         done = false;
         // time = 0;
     }
@@ -63,6 +65,7 @@ public class GameState {
         out.cookies = this.cookies;
         out.grandmaUpgrades = this.grandmaUpgrades;
         out.thousand_fingers = this.thousand_fingers;
+        out.cookiesBanked = this.cookiesBanked;
         // out.time = this.time;
 
         return out;
@@ -98,8 +101,7 @@ public class GameState {
         cps_10 = 0;
         for (int i = 0; i < 5; i++){
             cps_10 += buildings[i] * modifiers[i];
-        }
-        
+        } 
     }
 
     public void setTarget(int newTarget) {
@@ -114,10 +116,12 @@ public class GameState {
         // add each building as action
         for (int i = 0; i < 5; i++){
             // convert this to lookup table
-            cost = (int) Math.ceil(BASE_COST[i] * Math.pow(1.15, buildings[i])) - cookiesBanked;
-            Counter2.count++;
-            if (cost <= maxCost && cost >= 0) {
-                actions.add(new Action(0, cost, i));
+            if (recentlySold[i] == 0){
+                cost = (int) Math.ceil(BASE_COST[i] * Math.pow(1.15, buildings[i])) - cookiesBanked;
+                Counter2.count++;
+                if (cost <= maxCost && cost >= 0) {
+                    actions.add(new Action(0, cost, i));
+                }
             }
         }
 
@@ -168,8 +172,15 @@ public class GameState {
             }
         }
 
-        // only add wait if no other actions
-        if (actions.isEmpty()) {
+        // only add wait if no other actions and didn't just sell
+        boolean canWait = true;
+        for (int i = 0; i < 5; i++){
+            if (recentlySold[i] > 0){
+                canWait = false;
+                break;
+            }
+        }
+        if (actions.isEmpty() & canWait) {
             actions.add(new Action(3, maxCost, -1));
         }
         else {
@@ -192,6 +203,7 @@ public class GameState {
         if (action.flag == 5) { // sell
             cookiesBanked += action.sellCount;
             buildings[action.building]--;
+            recentlySold[action.building]++;
             return;
         }
         switch (action.flag) {
@@ -212,6 +224,9 @@ public class GameState {
             
         }
         updateCPS();
+        for (int i = 0; i < 5; i++){
+            recentlySold[i] = 0;
+        }
         cookiesBanked = 0;  
     }
 
