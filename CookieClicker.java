@@ -32,14 +32,15 @@ public class CookieClicker {
 
         // solution.printPathNodes();
 
-        // solution = Tester.treeSearchTester(250, true);
-        // solution.print();
-        // solution.printAllMoves();
 
-        solution = Tester.hashSearchTester(500, true);
+        solution = Tester.A_Starv2Tester(650, true);
         solution.print();
         solution.printAllMoves();
         solution.printMoves();
+
+        // next steps:
+        // more selling optimizations?
+        // lock in reasonable starting actions
 
     }
 
