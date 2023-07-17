@@ -13,6 +13,12 @@ public class Node {
         score = Double.POSITIVE_INFINITY;
     }
 
+    public Node(int maxCookies, int cps) {
+        this.gametimer = new GameTimer(maxCookies, cps);
+        path = new ArrayList<Action>(); 
+        score = Double.POSITIVE_INFINITY;
+    }
+
     public Node(GameTimer gametimer){
         this.gametimer = gametimer;
         path = new ArrayList<Action>();
@@ -28,9 +34,9 @@ public class Node {
         path.add(action);
     }
 
-    public ArrayList<Node> getNeighboursv2(){
+    public ArrayList<Node> getNeighboursv2(boolean canSell){
         ArrayList<Node> bois = new ArrayList<Node>();
-        ArrayList<Action> actions = gametimer.getActionsv2();
+        ArrayList<Action> actions = gametimer.getActionsv2(canSell);
         Node newNode;
         
         for (Action action : actions) {
@@ -154,11 +160,12 @@ public class Node {
 
     public double heuristic4() {
         double out = 0;
-        for (int i = 0; i < 5; i++){
-            out += getGameState().recentlySold[i];
-        }
-        return 0;
-        // return out / 4;
+        // for (int i = 0; i < 5; i++){
+        //     if(getGameState().recentlySold[i]){
+        //         out += i;
+        //     }
+        // }
+        return out;
     }
 
 
@@ -173,7 +180,7 @@ public class Node {
     }
 
     public void printPathNodes() {
-        Node dummy = new Node(getGameState().targetCookies);
+        Node dummy = new Node(getGameState().targetCookies, getGameState().clicksPerSecond);
         dummy.printStats();
         for (Action action : path) {
             dummy.getGameTimer().doAction(action);

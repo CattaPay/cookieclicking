@@ -5,7 +5,6 @@ public class CookieClicker {
 
     public static void main(String[] args) {
         
-        Node solution;
         // // // solution = Tester.treeSearchTester(tests, true);
         // // // solution = Tester.hashSearchTester(tests, true);
         // // // solution = Tester.hashSearchStopTester(tests, true);
@@ -33,14 +32,33 @@ public class CookieClicker {
         // solution.printPathNodes();
 
 
-        solution = Tester.A_Starv2Tester(650, true);
-        solution.print();
-        solution.printAllMoves();
-        solution.printMoves();
+        // solution = Tester.A_Starv2Tester(650, true);
+        // solution.print();
+        // solution.printAllMoves();
+        // solution.printMoves();
 
         // next steps:
         // more selling optimizations?
         // lock in reasonable starting actions
+
+        int target = 1000000;
+        // Node clickNode = new Node(target, 8);
+
+        Node clickNode = Algorithms.stonkFishStart(false, 7);
+        
+        Node solution =  Algorithms.stonkFish(false, clickNode, target);
+
+        // solution.print();
+        solution.printAllMoves();
+
+
+        
+        // solution.printPathNodes();
+
+
+        // Node solution = Tester.A_Starv2Tester(target, true, true, startNode);     
+        // solution.print();
+        // solution.printMoves();
 
     }
 

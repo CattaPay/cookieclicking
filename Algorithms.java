@@ -7,7 +7,7 @@ import helpers.*;
 public class Algorithms {
     
     // full tree search (1,419 nodes at 500; 111,556 nodes at 1000; 3,020,093 nodes at 1500)
-    public static Node treeSearch(Node startNode, int target, Counter counter) {
+    public static Node treeSearch(Node startNode, int target, Counter counter, boolean canSell) {
         // base case
         counter.calls++;
         if (startNode.getCookies() >= target) {
@@ -17,11 +17,11 @@ public class Algorithms {
 
         counter.nonBase++;
         
-        ArrayList<Node> nodes = startNode.getNeighboursv2();
+        ArrayList<Node> nodes = startNode.getNeighboursv2(canSell);
         ArrayList<Node> newNodes = new ArrayList<Node>();
 
         for (Node node : nodes) {
-            newNodes.add(treeSearch(node, target, counter));
+            newNodes.add(treeSearch(node, target, counter, canSell));
         }
         return Node.bestTime(newNodes);
     }
@@ -29,7 +29,7 @@ public class Algorithms {
     // hashmap to track nodes visited
     // hashcode ignores path and time, allowing comparison between states
     // 1,801 nodes at 1000; 2,567,954 nodes at 10000; 379,908 nodes at 5000; 7,658,142 nodes at 15000
-    public static Node hashSearch(Node startNode, int target, Counter counter, HashMap<GameState, Double> map) {
+    public static Node hashSearch(Node startNode, int target, Counter counter, HashMap<GameState, Double> map, boolean canSell) {
         // base case
         counter.calls++;
         if (startNode.getCookies() >= target) {
@@ -49,11 +49,11 @@ public class Algorithms {
         }
         map.put(gs, time);
 
-        ArrayList<Node> nodes = startNode.getNeighboursv2();
+        ArrayList<Node> nodes = startNode.getNeighboursv2(canSell);
         ArrayList<Node> newNodes = new ArrayList<Node>();
 
         for (Node node : nodes) {
-            newNodes.add(hashSearch(node, target, counter, map));
+            newNodes.add(hashSearch(node, target, counter, map, canSell));
         }
         return Node.bestTime(newNodes);
     }
@@ -61,47 +61,9 @@ public class Algorithms {
     // hashSearch with a stopping condition if node time greater than best finish time
     // implemented through counter
     // 1,092 nodes at 1000; 334,942 nodes at 10000; 1,431,015 nodes at 20000
-    public static Node hashSearchStop(Node startNode, int target, Counter counter, HashMap<GameState, Double> map) {
-        counter.calls++;
-        Double time = startNode.getTime();
-
-        if (time >= counter.stopTime) {
-            counter.stopHits++;
-            return null;
-        }
-        
-        // base case
-        if (startNode.getCookies() >= target) {
-            // counter.calls++;
-            // startNode.print();
-            if (time < counter.stopTime) {
-                counter.stopTime = time;
-            }
-            return startNode;
-        }
-        counter.nonBase++;
-        
-        GameState gs = startNode.getGameState();
-
-        if (map.containsKey(gs)){
-            counter.map_hits++;
-            if (map.get(gs) <= time){
-                return null;
-            }
-        }
-        map.put(gs, time);
-
-        ArrayList<Node> nodes = startNode.getNeighboursv2();
-        ArrayList<Node> newNodes = new ArrayList<Node>();
-
-        for (Node node : nodes) {
-            newNodes.add(hashSearchStop(node, target, counter, map));
-        }
-        return Node.bestTime(newNodes);
-    }
 
     // same as hashSearchStopv2 but with improved getActions
-    public static Node hashSearchStopv2(Node startNode, int target, Counter counter, HashMap<GameState, Double> map) {
+    public static Node hashSearchStopv2(Node startNode, int target, Counter counter, HashMap<GameState, Double> map, boolean canSell) {
         counter.calls++;
         Double time = startNode.getTime();
 
@@ -131,11 +93,11 @@ public class Algorithms {
         }
         map.put(gs, time);
 
-        ArrayList<Node> nodes = startNode.getNeighboursv2();
+        ArrayList<Node> nodes = startNode.getNeighboursv2(canSell);
         ArrayList<Node> newNodes = new ArrayList<Node>();
 
         for (Node node : nodes) {
-            newNodes.add(hashSearchStopv2(node, target, counter, map));
+            newNodes.add(hashSearchStopv2(node, target, counter, map, canSell));
         }
         return Node.bestTime(newNodes);
     }
@@ -146,78 +108,8 @@ public class Algorithms {
 
 
     // maybe implement A*... add score to Node, come up with heuristic
-    public static Node A_Star(Node startNode, int target, Counter counter) {
-        PriorityQueue<Node> openNodes = new PriorityQueue<Node>(new NodeSorter());
-        HashMap<GameState, Double> closedSet = new HashMap<GameState, Double>();
-        
-        // put first node in open queue
-        openNodes.add(startNode);
 
-        Node newNode;
-        double time;
-        double maxEndTime = Double.POSITIVE_INFINITY;
-        GameState gs;
-        ArrayList<Node> nodes = new ArrayList<Node>();
-        double nextTime;
-        GameState nextgs;
-        Node bestNode = null;
-
-
-        // while open queue has nodes:
-        while(!openNodes.isEmpty()) {
-            counter.calls++;
-            // get node from open queue
-            newNode = openNodes.poll();
-            time = newNode.getTime();
-            gs = newNode.getGameState();
-            
-
-            // check if node is in closed set
-            if (closedSet.containsKey(gs)){
-                if (time >= closedSet.get(gs)){
-                    continue;
-                }
-            }
-
-            // 
-            if (newNode.getCookies() >= target) {
-                if (time < maxEndTime){
-                    bestNode = newNode;
-                    maxEndTime = time;
-                    continue;
-                }
-            }
-
-            // add node and time to closed set (hashmap)
-            closedSet.put(gs, time);
-
-            // for each neighbour:
-            nodes = newNode.getNeighboursv2();
-
-            for (Node node : nodes) {
-                // check if in closed set
-                nextTime = node.getTime();
-                nextgs = node.getGameState();
-                if (closedSet.containsKey(nextgs)) {
-                    if (closedSet.get(nextgs) <= nextTime) {
-                        counter.map_hits++;
-                        continue;
-                    }
-                    else {
-                        closedSet.remove(nextgs);
-                    }
-                }
-                // if not or better, calc score and add to open queue
-                node.setScore(node.heuristic0() + nextTime);
-                openNodes.add(node);
-            }
-
-
-        }
-        return bestNode;
-    }
-
-    public static Node A_Starv2(Node startNode, int target, Counter counter) {
+    public static Node A_Starv2(Node startNode, int target, Counter counter, boolean canSell) {
         PriorityQueue<Node> openNodes = new PriorityQueue<Node>(new NodeSorter());
         HashMap<GameState, Double> closedSet = new HashMap<GameState, Double>();
         
@@ -254,7 +146,7 @@ public class Algorithms {
                 if (time < maxEndTime){
                     bestNode = newNode;
                     maxEndTime = time;
-                    continue;
+                    break;
                 }
             }
 
@@ -262,7 +154,7 @@ public class Algorithms {
             closedSet.put(gs, time);
 
             // for each neighbour:
-            nodes = newNode.getNeighboursv2();
+            nodes = newNode.getNeighboursv2(canSell);
 
             for (Node node : nodes) {
                 // check if in closed set
@@ -288,65 +180,157 @@ public class Algorithms {
         return bestNode;
     }
 
-    public static Node stonkFish() {
-        int[] depthIncrements = {20000, 60000};
-        int[] keepIncrements = {10000, 20000};
-        int maxVal = 10000000;
-        Counter counter = new Counter();
+    // uses a previously supplied maximum time
+    public static Node A_Starv3(Node startNode, int target, Counter counter, boolean canSell, double maxEndTime) {
+        PriorityQueue<Node> openNodes = new PriorityQueue<Node>(new NodeSorter());
+        HashMap<GameState, Double> closedSet = new HashMap<GameState, Double>();
         
-        Node solution = new Node(15);
-        Node startNode = new Node(15);
-        Node midNode;
-        long startTime;
-        long endTime;
+        // put first node in open queue
+        openNodes.add(startNode);
 
-        int keepVal = 0;
-        int jumpVal = 0;
-
-        int depthInc;
-        int keepInc;
-        int depthKept = 0;
+        Node newNode;
+        double time;
+        GameState gs;
+        ArrayList<Node> nodes = new ArrayList<Node>();
+        double nextTime;
+        GameState nextgs;
+        Node bestNode = null;
 
 
-        for (int i = 0; i < depthIncrements.length; i++) {
-            depthInc = depthIncrements[i];
-            keepInc = keepIncrements[i];
-            keepVal += keepInc;
-            jumpVal = depthKept + depthInc;
+        // while open queue has nodes:
+        while(!openNodes.isEmpty()) {
+            counter.calls++;
+            // get node from open queue
+            newNode = openNodes.poll();
+            time = newNode.getTime();
+            gs = newNode.getGameState();
 
-            startNode.getGameState().setTarget(jumpVal);
-            startNode.purgePath();
-
-            startTime = System.nanoTime();
-            midNode = Algorithms.A_Starv2(startNode, jumpVal, counter);
-            endTime = System.nanoTime();
-
-            for (Action action: midNode.getPath()) {
-                if (solution.getCookies() + action.cost >= keepVal) {
-                    depthKept = solution.getCookies();
-                    break;
+            // check time first
+            
+            
+            // check if node is in closed set
+            if (closedSet.containsKey(gs)){
+                if (time >= closedSet.get(gs)){
+                    continue;
                 }
-                solution.doAction(action);
-                // System.out.print(i + ": ");
-                // action.print();
             }
 
-            startNode = solution.copy();
+            // 
+            if (newNode.getCookies() >= target) {
+                if (time < maxEndTime){
+                    bestNode = newNode;
+                    maxEndTime = time;
+                    break;
+                }
+            }
 
-            // System.out.print(midNode.getPath().size() + ", ");
-            // System.out.println((double)(endTime - startTime) / 1000000);
-            // System.out.println("----------");
+            // add node and time to closed set (hashmap)
+            closedSet.put(gs, time);
+
+            // for each neighbour:
+            nodes = newNode.getNeighboursv2(canSell);
+
+            for (Node node : nodes) {
+                // check if in closed set
+                nextTime = node.getTime();
+
+                if (nextTime >= maxEndTime){
+                    continue;
+                }
+                nextgs = node.getGameState();
+                if (closedSet.containsKey(nextgs)) {
+                    if (closedSet.get(nextgs) <= nextTime) {
+                        counter.map_hits++;
+                        continue;
+                    }
+                    else {
+                        closedSet.remove(nextgs);
+                    }
+                }
+                // if not or better, calc score and add to open queue
+                // currently using heuristic0
+                node.setScore(node.heuristic4() + nextTime);
+                openNodes.add(node);
+            }
+
+
         }
+        return bestNode;
+    }
 
-        // first 23466 cookies optimal up to 80000ish
-        // solution.print();
+    public static Node stonkFishStart(boolean canSell, int cps) {
+        if (!canSell){
+            int[] depthIncrements = {20000, 60000};
+            int[] keepIncrements = {10000, 20000};
+            int maxVal = 1000000;
+            Counter counter = new Counter();
+            
+            Node solution = new Node(15, cps);
+            Node startNode = new Node(15, cps);
+            Node midNode;
+            long startTime;
+            long endTime;
 
-        // search then make one move
+            int keepVal = 0;
+            int jumpVal = 0;
+
+            int depthInc;
+            int keepInc;
+            int depthKept = 0;
+
+
+            for (int i = 0; i < depthIncrements.length; i++) {
+                depthInc = depthIncrements[i];
+                keepInc = keepIncrements[i];
+                keepVal += keepInc;
+                jumpVal = depthKept + depthInc;
+
+                startNode.getGameState().setTarget(jumpVal);
+                startNode.purgePath();
+
+                startTime = System.nanoTime();
+                midNode = Algorithms.A_Starv2(startNode, jumpVal, counter, canSell);
+                endTime = System.nanoTime();
+
+                for (Action action: midNode.getPath()) {
+                    if (solution.getCookies() + action.cost >= keepVal) {
+                        depthKept = solution.getCookies();
+                        break;
+                    }
+                    solution.doAction(action);
+                }
+
+                startNode = solution.copy();
+            }
+            return solution;
+        }
+        else {
+            Counter counter = new Counter();
+            int target = 1000;
+            Node start1 = new Node(target);
+            Node solution = Algorithms.A_Starv2(start1, 650, counter, true);
+            for (int i = 0; i < 5; i++) {
+                start1.doAction(solution.getPath().get(i));
+            }
+            return start1;
+        }
+    }
+
+    public static Node stonkFish(boolean canSell, Node inNode, int target) {
         int nextDepth = 0;
         int currentCookies;
         Action oneAction;
         int depthChange;
         double smallCookies;
+
+        int maxVal = target;
+        long startTime;
+        long endTime;
+        Counter counter = new Counter();
+        Node midNode;
+
+        Node solution = inNode;
+        Node startNode;
         
         // double targetTime = 100;
 
@@ -356,21 +340,33 @@ public class Algorithms {
             currentCookies = solution.getCookies();
             smallCookies = (double) (currentCookies) / 30000;
 
-            depthChange = (int)(200000 * Math.pow(smallCookies, 0.28));
+            if (canSell) {
+                depthChange = (int)(2000 * Math.pow(smallCookies, 0.38));;
+                nextDepth = currentCookies + depthChange;
+                if (nextDepth > maxVal){
+                    nextDepth = maxVal;
+                    break;
+                }
+            }
+            else {
+                depthChange = (int)(150000 * Math.pow(smallCookies, 0.39));
+                nextDepth = currentCookies + depthChange;
+                if (nextDepth > maxVal - 100000){
+                    nextDepth = maxVal;
+                    break;
+                }
+                if (nextDepth < 30000){
+                    nextDepth = 30000;
+                }
+            }
+            
 
             // depthChange = (int)(110000 * Math.pow(smallCookies, 0.36));
-            nextDepth = currentCookies + depthChange;
-
-
-            if (nextDepth > maxVal - 100000){
-                nextDepth = maxVal;
-                break;
-            }
 
             startNode.getGameState().setTarget(nextDepth);
 
             startTime = System.nanoTime();
-            midNode = Algorithms.A_Starv2(startNode, nextDepth, counter);
+            midNode = Algorithms.A_Starv2(startNode, nextDepth, counter, canSell);
             endTime = System.nanoTime();
             System.out.print(currentCookies + ", " + depthChange + ": ");
             System.out.print((double) (endTime-startTime) / 1000000 + ", ");
@@ -385,7 +381,7 @@ public class Algorithms {
         solution.getGameState().setTarget(nextDepth);
 
         startTime = System.nanoTime();
-        solution = Algorithms.A_Starv2(solution, nextDepth, counter);
+        solution = Algorithms.A_Starv2(solution, nextDepth, counter, canSell);
         endTime = System.nanoTime();
 
         System.out.println((double) (endTime-startTime) / 1000000);
@@ -402,5 +398,7 @@ public class Algorithms {
 
         
     }
+
+    // public static Node sellHelper()
 
 }

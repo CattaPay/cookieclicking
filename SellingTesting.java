@@ -37,7 +37,7 @@ public class SellingTesting {
 
         Node startNode = new Node(1000);
 
-        ArrayList<Node> nextNodes = startNode.getNeighboursv2();
+        ArrayList<Node> nextNodes = startNode.getNeighboursv2(true);
         for (Node node : nextNodes) {
             node.printAllMoves();
             node.print();

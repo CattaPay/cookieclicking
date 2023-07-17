@@ -13,6 +13,11 @@ public class GameTimer {
         time = 0;
     }
 
+    public GameTimer(int targetCookies, int cps) {
+        gamestate = new GameState(targetCookies, cps);
+        time = 0;
+    }
+
     public GameTimer copy() {
         GameTimer newGameTimer = new GameTimer(gamestate.getTarget());
         newGameTimer.gamestate = gamestate.copy();
@@ -34,8 +39,8 @@ public class GameTimer {
     }
 
 
-    public ArrayList<Action> getActionsv2() {
-        return gamestate.getActionsv2();
+    public ArrayList<Action> getActionsv2(boolean canSell) {
+        return gamestate.getActionsv2(canSell);
     }
 
     
