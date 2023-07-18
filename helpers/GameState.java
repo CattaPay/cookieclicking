@@ -22,13 +22,16 @@ public class GameState {
                                     {11000, 55000, 550000},
                                     {120000, 600000, 6000000}};
     static int[] BASE_MODIFIER = {1, 10, 80, 470, 2600}; // multiplied by 10
+    static int[] CLICK_UP_COST = {50000};
 
     int[] buildings; // array of number of each building
     public double[] modifiers; // value in cps of each building
+    public double clickModifier;
     int cps_10; // 10x the value of cps
     public int[] double_upgrades; // counts the doubling upgrades for each building
     boolean thousand_fingers;
     int grandmaUpgrades; // require 15 of building, 1 grandma to upgrade
+    int clickerUpgrades; // plastic mouse and friends
     boolean[] recentlySold;
     int clicksPerSecond;
 
@@ -46,6 +49,7 @@ public class GameState {
         for (int i = 0; i < 5; i++) {
             modifiers[i] = BASE_MODIFIER[i];
         }
+        clickModifier = 1;
         //modifiers = BASE_MODIFIER; // multiplied by 10
         double_upgrades = new int[5];
         non_clickers = 0;
@@ -56,6 +60,7 @@ public class GameState {
         this.recentlySold = new boolean[5];
         done = false;
         clicksPerSecond = 0;
+        clickerUpgrades = 0;
         // time = 0;
     }
 
@@ -65,6 +70,7 @@ public class GameState {
         for (int i = 0; i < 5; i++) {
             modifiers[i] = BASE_MODIFIER[i];
         }
+        clickModifier = 1;
         //modifiers = BASE_MODIFIER; // multiplied by 10
         double_upgrades = new int[5];
         non_clickers = 0;
@@ -75,6 +81,7 @@ public class GameState {
         this.recentlySold = new boolean[5];
         done = false;
         clicksPerSecond = cps;
+        clickerUpgrades = 0;
         // time = 0;
     }
 
@@ -85,12 +92,14 @@ public class GameState {
             out.double_upgrades[i] = this.double_upgrades[i];
             out.modifiers[i] = this.modifiers[i];
         }
+        out.clickModifier = this.clickModifier;
         out.cps_10 = this.cps_10;
         out.cookies = this.cookies;
         out.grandmaUpgrades = this.grandmaUpgrades;
         out.thousand_fingers = this.thousand_fingers;
         out.cookiesBanked = this.cookiesBanked;
         out.clicksPerSecond = this.clicksPerSecond;
+        out.clickerUpgrades = this.clickerUpgrades;
         // out.time = this.time;
 
         return out;
@@ -119,6 +128,12 @@ public class GameState {
             modifiers[1] *= 2;
             modifiers[i+1] *= (1 + (double) buildings[1] / 100 / i);
         }
+
+        clickModifier = Math.pow(2, double_upgrades[0]);
+        if (thousand_fingers) {
+            clickModifier += non_clickers * 0.1;
+        }
+
     }
 
     public void updateCPS() {
@@ -127,7 +142,8 @@ public class GameState {
         for (int i = 0; i < 5; i++){
             cps_10 += buildings[i] * modifiers[i];
         } 
-        cps_10 += modifiers[0] * clicksPerSecond * 10;
+        clickModifier += cps_10 * 0.001 * clickerUpgrades;
+        cps_10 += clickModifier * clicksPerSecond * 10;
     }
 
     public void setTarget(int newTarget) {
@@ -191,10 +207,18 @@ public class GameState {
         // add thousand fingers if possible
         if (!thousand_fingers) {
             if (FINGER_REQ <= buildings[0]){
-                cost = FINGER_REQ - cookiesBanked;
-                if (FINGER_COST <= maxCost && FINGER_COST >= 0) {
-                    actions.add(new Action(2, FINGER_COST, -1));
+                cost = FINGER_COST - cookiesBanked;
+                if (cost <= maxCost && cost >= 0) {
+                    actions.add(new Action(2, cost, -1));
                 }
+            }
+        }
+
+        // add plastic mouse and friends
+        if (clickerUpgrades < 1) {
+            cost = CLICK_UP_COST[clickerUpgrades] - cookiesBanked;
+            if (cost <= maxCost && cost >= 0) {
+                actions.add(new Action(6, cost, -1));
             }
         }
 
@@ -340,6 +364,8 @@ public class GameState {
             case 4:
                 grandmaUpgrades++;
                 break;
+            case 6:
+                clickerUpgrades++;
             default:
                 break;
             
@@ -355,13 +381,14 @@ public class GameState {
         System.out.println("Cookies: " + cookies);
         System.out.println("Banked: " + cookiesBanked);
         // System.out.println("Time: " + time * 10);
+        System.out.println("Cookies per Click: " + clickModifier);
         System.out.print("Buildings: ");
         for (int i = 0; i < 5; i++){
             System.out.print(buildings[i]);
             System.out.print(" ");
         }
         System.out.println();
-        System.out.println("CPS: " + cps_10);
+        System.out.println("CPS: " + (double) cps_10/ 10);
         System.out.print("Upgrades: ");
         for (int i = 0; i < 5; i++){
             System.out.print(double_upgrades[i]);

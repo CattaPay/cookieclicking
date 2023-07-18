@@ -45,6 +45,8 @@ public class Action {
                 break;
             case 5:
                 out = "Sell_";
+            case 6:
+                out = "ClickUpgrade";
             default:
                 switch (building) {
                 case 0:

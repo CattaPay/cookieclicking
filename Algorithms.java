@@ -349,7 +349,7 @@ public class Algorithms {
                 }
             }
             else {
-                depthChange = (int)(150000 * Math.pow(smallCookies, 0.39));
+                depthChange = (int)(220000 * Math.pow(smallCookies, 0.4));
                 nextDepth = currentCookies + depthChange;
                 if (nextDepth > maxVal - 100000){
                     nextDepth = maxVal;

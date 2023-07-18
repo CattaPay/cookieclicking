@@ -4,13 +4,13 @@ import java.util.*;
 
 public class Playable {
     public static void main(String[] args) {
-        Node game = new Node(400, 5);
+        Node game = new Node(1000000, 0);
         ArrayList<Action> actions;
         Scanner sc = new Scanner(System.in); 
         int in;
 
         while (true){
-            actions = game.getGameState().getActionsv2(true);
+            actions = game.getGameState().getActionsv2(false);
             // System.out.println(counter);
             game.print();
             for (int i = 0; i < actions.size(); i++){

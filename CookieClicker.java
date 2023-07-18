@@ -51,6 +51,9 @@ public class CookieClicker {
         // solution.print();
         solution.printAllMoves();
 
+        PrettyPrinter pp = new PrettyPrinter(solution);
+        pp.printAllMoves();
+
 
         
         // solution.printPathNodes();
